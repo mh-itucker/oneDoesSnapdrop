@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+<a name="0.6.1"></a>
+## 0.6.1 (2018-06-06)
+
+
+
+
+**Note:** Version bump only for package @onedoes/snapdrop-pwa
+
 <a name="0.6.0"></a>
 # [0.6.0](https://github.com/onedoes/snapdrop/compare/v0.5.6...v0.6.0) (2018-05-30)
 

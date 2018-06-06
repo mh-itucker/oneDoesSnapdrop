@@ -1,6 +1,6 @@
 {
   "name": "@onedoes/snapdrop-server",
-  "version": "0.5.6",
+  "version": "0.6.1",
   "scripts": {
     "build": "exit 0",
     "start": "node index.js",

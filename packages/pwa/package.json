@@ -1,6 +1,6 @@
 {
   "name": "@onedoes/snapdrop-pwa",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "scripts": {
     "build_autotrack": "autotrack -o dist/autotrack.min.js -p eventTracker,outboundLinkTracker,pageVisibilityTracker,urlChangeTracker",
     "build_gulp": "gulp",
