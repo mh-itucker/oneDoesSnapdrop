@@ -1,0 +1,252 @@
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../bower_components/neon-animation/neon-shared-element-animatable-behavior.html">
+<link rel="import" href="../../bower_components/neon-animation/neon-animations.html">
+<link rel="import" href="../../bower_components/paper-styles/paper-styles-classes.html">
+<link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
+<dom-module id="status-page">
+    <template>
+        <style>
+        :host {
+            display: block;
+            overflow: hidden;
+            color: white;
+            z-index: 3;
+            --paper-tooltip: {
+                font-size: 14px;
+                background-color: white;
+                color: #204074;
+            }
+            --paper-tooltip-opacity:0.95;
+
+            --status-up-color: #155724;
+            --status-up-background-color: #d4edda;
+
+            --status-unknown-color: #856404;
+            --status-unknown-background-color: #fff3cd;
+
+            --status-down-color: #721c24;
+            --status-down-background-color: #f8d7da;
+        }
+
+        #placeholder {
+            opacity: 0;
+            background-color: #204074;
+            @apply(--layout-fit);
+        }
+
+        #container {
+            @apply(--layout-fit);
+            @apply(--layout-vertical);
+            @apply(--layout-center-center);
+            background-color: #204074;
+            padding: 64px 32px 64px 32px;
+            box-sizing: border-box;
+        }
+
+        .share {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            z-index: 10;
+        }
+
+        .content {
+            background-color: #204074;
+            max-width: 90%;
+            margin: auto;
+            display: block;
+            background: #ffffff;
+            color: #212121;
+            padding: 24px;
+            box-shadow: 0 16px 24px 2px rgba(0, 0, 0, 0.14), 0 6px 30px 5px rgba(0, 0, 0, 0.12), 0 8px 10px -5px rgba(0, 0, 0, 0.4);
+        }
+
+        .title {
+            margin-bottom: 2em;
+        }
+
+        .title span.up {
+            color: var(--status-up-color);
+        }
+        .title span.unknown {
+            color: var(--status-unknown-color);
+        }
+        .title span.down {
+            color: var(--status-down-color);
+        }
+
+        table {
+            display: block;
+            width: 100%;
+            overflow: auto;
+            margin-bottom: 1rem;
+            border-collapse: collapse;
+        }
+
+        table thead th {
+            vertical-align: bottom;
+            text-align: inherit;
+        }
+
+        table td, table th {
+            padding: .75rem;
+            vertical-align: top;
+            border-top: 1px solid #e9ecef;
+        }
+
+
+        tr.up {
+          color: var(--status-up-color);
+          background-color: var(--status-up-background-color);
+        }
+        tr.unknown {
+          color: var(--status-unknown-color);
+          background-color: var(--status-unknown-background-color);
+        }
+        tr.down {
+          color: var(--status-down-color);
+          background-color: var(--status-down-background-color);
+        }
+
+        tr:not(:hover){
+          background-color: transparent;
+        }
+
+        </style>
+        <div id="placeholder"></div>
+        <div id="container">
+            <div class="share">
+                <paper-icon-button
+                  aria-label="back"
+                  id="btn"
+                  icon="chat:close"
+                  on-tap="_switch"
+                >
+                </paper-icon-button>
+            </div>
+
+            <div class="content">
+                <h2 class="title">Server status : <span class$="[[status]]">[[status]]</span></h2>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th><iron-icon icon="chat:sync"></iron-icon></th>
+                            <th>State</th>
+                            <th>Url</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <template is="dom-repeat" items="[[endpoints]]">
+                            <tr class$="[[item.status]]">
+                                <td><iron-icon icon="[[item.icon]]"></iron-icon></td>
+                                <td>
+                                    [[item.status]]
+                                </td>
+                                <td><code>[[item.url]]</code></td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </template>
+</dom-module>
+<script>
+(function() {
+    var STATUS_TO_ICON = {
+        'up': 'chat:sync',
+        'down': 'chat:sync-disabled',
+        'unknown': 'chat:sync-problem'
+    };
+
+    Polymer({
+        is: 'status-page',
+        behaviors: [
+            Polymer.NeonSharedElementAnimatableBehavior
+        ],
+        properties: {
+            animationConfig: {
+                value: function() {
+                    return {
+                        'entry': [{
+                            name: 'ripple-animation',
+                            id: 'ripple',
+                            toPage: this
+                        }, {
+                            name: 'fade-out-animation',
+                            node: this.$.placeholder,
+                            timing: {
+                                delay: 250
+                            }
+                        }, {
+                            name: 'fade-in-animation',
+                            node: this.$.container,
+                            timing: {
+                                delay: 50
+                            }
+                        }],
+                        'exit': [{
+                            name: 'opaque-animation',
+                            node: this.$.placeholder
+                        }, {
+                            name: 'fade-out-animation',
+                            node: this.$.container,
+                            timing: {
+                                duration: 0
+                            }
+                        }, {
+                            name: 'reverse-ripple-animation',
+                            id: 'reverse-ripple',
+                            fromPage: this
+                        }]
+                    };
+                }
+            },
+            sharedElements: {
+                value: function() {
+                    return {
+                        'ripple': this.$.placeholder,
+                        'reverse-ripple': this.$.placeholder
+                    };
+                }
+            }
+        },
+        ready: function () {
+            this._updateStatusEvent = function (e) {
+                this._updateStatus(e.detail);
+            }.bind(this);
+            document.addEventListener('endpoints-list', this._updateStatusEvent);
+        },
+        detached: function() {
+            document.removeEventListener('endpoints-list', this._updateStatusEvent);
+        },
+        _updateStatus: function (endpoints) {
+          var endpointStatus = endpoints.map(function (endpoint, i) {
+              const status = window.app.endpointsStatus[i];
+              return {
+                  status: status === undefined ? 'unknown' : Boolean(status) ? 'up' : 'down',
+                  url: endpoint
+              };
+          });
+          this.status = window.app.websocketUrl ? 'up' : 'down';
+          this.endpoints = endpointStatus.map(function (item) {
+              const maxlenght = 50;
+              const url = item.url.length > maxlenght ? item.url.slice(0, maxlenght - 3) + '...' :  item.url;
+              return {
+                  status: item.status,
+                  icon: STATUS_TO_ICON[item.status],
+                  url: url
+              };
+          });
+        },
+        _switch: function() {
+            ga('send', {
+                hitType: 'pageview',
+                page: '/'
+            });
+            document.querySelector('#pages').select(0);
+        }
+    });
+})();
+</script>

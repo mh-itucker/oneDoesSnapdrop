@@ -1,0 +1,200 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+
+  <script src="../../bower_components/webcomponentsjs/webcomponents-lite.js"></script>
+  <script src="../../bower_components/web-component-tester/browser.js"></script>
+
+  <link rel="import" href="../../elements/buddy-finder/device-name.html">
+</head>
+<body>
+
+  <test-fixture id="device-name-fixture">
+    <template>
+      <device-name></device-name>
+    </template>
+
+    <script>
+      HTMLImports.whenReady(function () {
+        Polymer({
+          is: 'fake-iron-localstorage',
+
+          properties: {
+            value: {
+              type: Object,
+              notify: true
+            }
+          },
+
+          ready: function () {}
+        });
+      });
+    </script>
+  </test-fixture>
+
+  <script>
+
+    suite('<device-name>', function() {
+      var myEl;
+      var fakeIronLocalStorage;
+      var sandbox = sinon.sandbox.create();
+
+      setup(function() {
+        // Mocks
+        replace('iron-localstorage').with('fake-iron-localstorage');
+      });
+
+      teardown(function () {
+        sandbox.restore();
+      })
+
+      suite('#open', function () {
+        var dialog;
+
+        setup(function() {
+          // mock device name dialog interaction
+          dialog = sandbox.mock({
+            open: Function.prototype
+          });
+        });
+
+        test('should call myEl.deviceNameDialog.open', function() {
+          // expect
+          dialog.expects('open').withArgs();
+
+          // given
+          myEl = fixture('device-name-fixture');
+          Object.defineProperty(myEl, 'deviceNameDialog', {
+            get() { return dialog.object }
+          });
+
+          // when
+          myEl.open();
+
+          // then
+          dialog.verify();
+        });
+      });
+
+      suite('should initialize', function () {
+        var context;
+
+        teardown(function () {
+          window.app = null;
+          window.ga = null;
+        })
+
+        setup(function() {
+          window.ga = sinon.expectation.create('window.ga');
+          window.ga.atLeast(1);
+
+          // mock app conn
+          window.app = {
+            conn: {
+              notifyServer: sinon.expectation.create('window.app.conn.notifyServer')
+            }
+          };
+
+          context = {
+            clock: sinon.useFakeTimers(),
+            value: 'foo'
+          };
+
+          const proto = document.createElement('fake-iron-localstorage').constructor.prototype;
+          if (!proto.ready) {
+            // The Polymer fake element is not reconized
+            this.skip();
+          }
+
+          // stub the fake iron localstorage to always set a fake value
+          stub('fake-iron-localstorage', {
+            ready: function() {
+              this.value = context.value;
+            }
+          });
+        });
+
+        test('with the localstorage value', function() {
+          // given
+          context.value = 'bar';
+
+          // when
+          myEl = fixture('device-name-fixture');
+
+          // then
+          assert.equal(myEl.name, 'bar');
+        });
+
+        test('should notify the server', function() {
+          // expect
+          window.app.conn.notifyServer.once().withArgs({
+            serverMsg: "device-name",
+            name: "foo"
+          });
+
+          // given
+          myEl = fixture('device-name-fixture');
+
+          // when
+          context.clock.tick(300);
+
+          // then
+          window.app.conn.notifyServer.verify();
+          window.ga.verify();
+        });
+
+        test('should not retry notifing the server on success', function() {
+          // expect
+          window.app.conn.notifyServer.once().withArgs({
+            serverMsg: "device-name",
+            name: "foo"
+          });
+
+          // given
+          myEl = fixture('device-name-fixture');
+
+          // when
+          context.clock.tick(300);
+          context.clock.tick(300);
+          context.clock.tick(300);
+          context.clock.tick(300);
+
+          // then
+          window.app.conn.notifyServer.verify();
+          window.ga.verify();
+        });
+
+
+        test('should retry to notify the server error', function() {
+          // expect
+          var mock = window.app.conn.notifyServer;
+          window.app.conn.notifyServer.once().withArgs({
+            serverMsg: "device-name",
+            name: "foo"
+          });
+
+          // given
+          window.app.conn.notifyServer = null;
+          myEl = fixture('device-name-fixture');
+
+          // when
+          context.clock.tick(300); // fail and retry
+          context.clock.tick(300); // fail and retry
+
+          //
+          window.app.conn.notifyServer = mock;
+
+          context.clock.tick(300); // success
+          context.clock.tick(300); // success no retry (mock called once)
+
+          // then
+          window.app.conn.notifyServer.verify();
+          window.ga.verify();
+        })
+      });
+    });
+  </script>
+</body>
+</html>

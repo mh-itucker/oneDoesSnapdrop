@@ -1,0 +1,170 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+
+  <script src="../../bower_components/webcomponentsjs/webcomponents-lite.js"></script>
+  <script src="../../bower_components/web-component-tester/browser.js"></script>
+
+  <link rel="import" href="../../elements/buddy-finder/device-name-dialog.html">
+</head>
+<body>
+
+  <test-fixture id="device-name-dialog-fixture">
+    <template>
+      <device-name-dialog></device-name-dialog>
+    </template>
+  </test-fixture>
+
+  <script>
+    suite('<device-name-dialog>', function() {
+      var sandbox = sinon.sandbox.create();
+
+      teardown(function () {
+        sandbox.restore();
+      })
+
+      suite('#open', function () {
+        var dialog;
+
+        setup(function() {
+          // mock paper dialog interaction
+          dialog = sandbox.mock({
+            open: Function.prototype
+          });
+        });
+
+        test('should call open on the paper-dialog', function() {
+          // expect
+          dialog.expects('open').withArgs();
+
+          // given
+          myEl = fixture('device-name-dialog-fixture');
+          myEl.$.dialog = dialog.object;
+
+          // when
+          myEl.open();
+
+          // then
+          dialog.verify();
+        });
+      });
+
+      suite('should save and close when "Enter" is pressed in input', function () {
+        var inputElement;
+        var dialog;
+
+        teardown(function () {
+          window.ga = null;
+        })
+
+        setup(function() {
+          window.ga = sinon.expectation.create('window.ga');
+          window.ga.atLeast(1);
+
+          // mock input in paper-input interaction
+          inputElement = sandbox.mock({
+            blur: Function.prototype
+          });
+          // mock paper dialog interaction
+          dialog = sandbox.mock({
+            close: Function.prototype
+          });
+        });
+
+        test('with pressing deprecated event.which number 13', function() {
+          // expect
+          inputElement.expects('blur').withArgs();
+          dialog.expects('close').withArgs();
+
+          // given
+          myEl = fixture('device-name-dialog-fixture');
+          myEl.$.dialog = dialog.object;
+
+          Object.defineProperty(myEl.$.input, 'inputElement', {
+            get() { return inputElement.object }
+          });
+
+          myEl.deviceName = 'foo';
+
+          // HACK: mock fire after changing deviceName
+          // 'deviceName' trigger an "device-name-changed" event
+          myEl.fire = sinon.expectation.create('fire');
+          myEl.fire.withArgs('save-device-name', 'foo').once()
+
+
+          // when
+          myEl._keyPressed({which: 13});
+
+          // then
+          inputElement.verify();
+          dialog.verify();
+          myEl.fire.verify();
+          window.ga.verify();
+        });
+
+        test('with pressing deprecated event.charCode number 13', function() {
+          // expect
+          inputElement.expects('blur').withArgs();
+          dialog.expects('close').withArgs();
+
+          // given
+          myEl = fixture('device-name-dialog-fixture');
+          myEl.$.dialog = dialog.object;
+
+          Object.defineProperty(myEl.$.input, 'inputElement', {
+            get() { return inputElement.object }
+          });
+
+          myEl.deviceName = 'foo';
+
+          // HACK: mock fire after changing deviceName
+          // 'deviceName' trigger an "device-name-changed" event
+          myEl.fire = sinon.expectation.create('fire');
+          myEl.fire.withArgs('save-device-name', 'foo').once()
+
+          // when
+          myEl._keyPressed({charCode: 13});
+
+          // then
+          inputElement.verify();
+          dialog.verify();
+          myEl.fire.verify();
+          window.ga.verify();
+        });
+
+        test('with pressing event.key number "Enter"', function() {
+          // expect
+          inputElement.expects('blur').withArgs();
+          dialog.expects('close').withArgs();
+
+          // given
+          myEl = fixture('device-name-dialog-fixture');
+          myEl.$.dialog = dialog.object;
+          Object.defineProperty(myEl.$.input, 'inputElement', {
+            get() { return inputElement.object }
+          });
+
+          myEl.deviceName = 'foo';
+
+          // HACK: mock fire after changing deviceName
+          // 'deviceName' trigger an "device-name-changed" event
+          myEl.fire = sinon.expectation.create('fire');
+          myEl.fire.withArgs('save-device-name', 'foo').once()
+
+          // when
+          myEl._keyPressed({key: 'Enter'});
+
+          // then
+          inputElement.verify();
+          dialog.verify();
+          myEl.fire.verify();
+          window.ga.verify();
+        });
+      });
+
+    });
+  </script>
+</body>
+</html>

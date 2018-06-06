@@ -1,0 +1,60 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+
+  <script src="../../bower_components/webcomponentsjs/webcomponents-lite.js"></script>
+  <script src="../../bower_components/web-component-tester/browser.js"></script>
+
+  <link rel="import" href="../../elements/p2p-network/p2p-network.html">
+</head>
+<body>
+
+  <test-fixture id="p2p-network-fixture">
+    <template>
+      <p2p-network me="foo"></p2p-network>
+    </template>
+  </test-fixture>
+
+  <script>
+
+    suite('<p2p-network>', function() {
+      var myEl;
+      var peer;
+      var sandbox = sinon.sandbox.create();
+
+      setup(function() {
+        window.app = { websocketUrl: '' };
+        window.debug = true;
+
+        peer = sandbox.mock({
+          on: Function.prototype,
+          destroy: Function.prototype
+        })
+        sandbox.stub(window, 'Peer').returns(peer.object);
+
+        myEl = fixture('p2p-network-fixture');
+      });
+
+      teardown(function () {
+        window.app = null;
+        window.debug = null;
+        sandbox.restore();
+      })
+
+      test('should initilize peer to peer connection', function() {
+        peer.expects('on').withArgs('open', sinon.match.func).callsArgWith(1, 'bar');
+        peer.expects('on').exactly(2);
+
+        // when
+        myEl.initialize();
+
+        // then
+        peer.verify();
+        assert.isTrue(myEl._peerOpen);
+      });
+    });
+  </script>
+</body>
+</html>

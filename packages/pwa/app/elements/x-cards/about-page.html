@@ -1,0 +1,280 @@
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../bower_components/neon-animation/neon-shared-element-animatable-behavior.html">
+<link rel="import" href="../../bower_components/neon-animation/neon-animations.html">
+<link rel="import" href="../../bower_components/paper-styles/paper-styles-classes.html">
+<link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
+<dom-module id="about-page">
+    <template>
+        <style>
+        :host {
+            display: block;
+            overflow: hidden;
+            color: white;
+            z-index: 3;
+            --paper-tooltip: {
+                font-size: 14px;
+                background-color: white;
+                color: #0B50C1;
+            }
+            --paper-tooltip-opacity:0.95;
+        }
+
+        #placeholder {
+            opacity: 0;
+            background-color: #0B50C1;
+            @apply(--layout-fit);
+        }
+
+        #container {
+            @apply(--layout-fit);
+            @apply(--layout-vertical);
+            @apply(--layout-center-center);
+            background-color: #0B50C1;
+            padding: 64px 32px 64px 32px;
+            box-sizing: border-box;
+        }
+
+        .logo {
+            width: 96px;
+            height: 96px;
+        }
+
+        .slogan {
+            text-align: center;
+        }
+
+        .paper-font-headline {
+            margin-bottom: 8px;
+            font-size: 32px;
+            padding-left: 26px;
+        }
+
+        .paper-font-headline sup {
+            font-size: 0.9rem;
+        }
+
+        a {
+            text-decoration: none;
+            color: white;
+        }
+
+        .center {
+            @apply(--layout-vertical);
+            @apply(--layout-center-center);
+        }
+
+        #footer {
+            position: absolute;
+            left: 50%;
+            margin-left: -160px;
+            width: 320px;
+            bottom: 24px;
+            text-align: center;
+        }
+
+        @media all and (max-height: 370px) {
+            #footer {
+                width: 320px;
+                bottom: 8px;
+            }
+        }
+
+        a {
+            display: inline-block;
+            text-align: center;
+        }
+
+        .donate-icon {
+            padding-top: 32px;
+            width: 32px;
+            height: 32px;
+        }
+
+        .paper-font-subhead {
+            font-size: 20px;
+        }
+
+        a.paper-font-subhead {
+            padding-top: 32px;
+        }
+
+        .share {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            z-index: 10;
+        }
+
+        .social {
+            margin: 16px;
+        }
+
+        #btn,
+        .social a {
+            color: white;
+        }
+
+        .social a {
+            text-decoration: none;
+            padding: 2px 9px 0 9px;
+        }
+
+        .share a:hover,
+        #btn:hover {
+            color: white;
+        }
+        </style>
+        <div id="placeholder"></div>
+        <div id="container">
+            <div class="share">
+                <paper-icon-button
+                  aria-label="back"
+                  icon="chat:close"
+                  id="btn"
+                  on-tap="_switch"
+                >
+                </paper-icon-button>
+            </div>
+
+            <div class="center">
+                <iron-icon icon="chat:wifi-tethering" class="logo"></iron-icon>
+                <div class="paper-font-headline">Snapdrop <sup>[[version]]</sup></div>
+                <div class="slogan">The easiest way to transfer files across devices.</div>
+                <div class="slogan"><a href="https://twitter.com/onedoesinc" target="_blank">Forked with &#9829; by OneDoes</a></div>
+                <div class="social">
+                    <a href="https://twitter.com/intent/tweet?text=https://onedoes.github.io/snapdrop/%20by%20@onedoesinc%20&" target="_blank">
+                        <iron-icon icon="chat:twitter"></iron-icon>
+                        <paper-tooltip position="bottom" offset="14">
+                            Tweet about OneDoes x Snapdrop!
+                        </paper-tooltip>
+                    </a>
+                    <a href="https://www.facebook.com/OneDoes/" target="_blank">
+                        <iron-icon icon="chat:facebook"></iron-icon>
+                        <paper-tooltip position="bottom" offset="14">
+                            Like our Facebook Page!
+                        </paper-tooltip>
+                    </a>
+                    <a href="https://github.com/onedoes/snapdrop/" target="_blank" class="github">
+                        <iron-icon icon="chat:github"></iron-icon>
+                        <paper-tooltip position="bottom" offset="14">
+                            Get involved!
+                        </paper-tooltip>
+                    </a>
+                    <a href="https://github.com/onedoes/snapdrop/#frequently-asked-questions" target="_blank" class="github">
+                        <iron-icon icon="chat:help-outline"></iron-icon>
+                        <paper-tooltip position="bottom" offset="14">
+                            Frequently Asked Questions
+                        </paper-tooltip>
+                    </a>
+                </div>
+            </div>
+
+            <div id="footer">
+                <br/>
+                <br/>
+                Made by <a href="https://twitter.com/robin_linus" target="_blank">Robin Linus</a>
+                <div class="social">
+                <a href="https://twitter.com/intent/tweet?text=https://snapdrop.net%20by%20@robin_linus%20&" target="_blank">
+                    <iron-icon icon="chat:twitter"></iron-icon>
+                    <paper-tooltip position="bottom" offset="14">
+                        Tweet about Snapdrop!
+                    </paper-tooltip>
+                </a>
+                <a href="https://www.facebook.com/RobinLinus" target="_blank">
+                    <iron-icon icon="chat:facebook"></iron-icon>
+                    <paper-tooltip position="bottom" offset="14">
+                        Like my Facebook Page!
+                    </paper-tooltip>
+                </a>
+                <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&cmd=_donations&business=robin@capira.de&currency_code=USD&item_name=Snapdrop&shipping=0" target="_blank">
+                    <iron-icon icon="chat:local-cafe"></iron-icon>
+                    <paper-tooltip position="bottom" offset="14">
+                        You like Snapdrop?
+                        <br> Buy me a cup of coffee!
+                    </paper-tooltip>
+                </a>
+                <a href="https://github.com/yougrow/snapdrop" target="_blank" class="github">
+                    <iron-icon icon="chat:github"></iron-icon>
+                    <paper-tooltip position="bottom" offset="14">
+                        Get involved!
+                    </paper-tooltip>
+                </a>
+                <a href="https://github.com/yougrow/snapdrop#frequently-asked-questions" target="_blank" class="github">
+                    <iron-icon icon="chat:help-outline"></iron-icon>
+                    <paper-tooltip position="bottom" offset="14">
+                        Frequently Asked Questions
+                    </paper-tooltip>
+                </a>
+                <br/>
+                <br/>
+            </div>
+        </div>
+    </template>
+</dom-module>
+<script>
+(function() {
+    Polymer({
+        is: 'about-page',
+        behaviors: [
+            Polymer.NeonSharedElementAnimatableBehavior
+        ],
+        properties: {
+            animationConfig: {
+                value: function() {
+                    return {
+                        'entry': [{
+                            name: 'ripple-animation',
+                            id: 'ripple',
+                            toPage: this
+                        }, {
+                            name: 'fade-out-animation',
+                            node: this.$.placeholder,
+                            timing: {
+                                delay: 250
+                            }
+                        }, {
+                            name: 'fade-in-animation',
+                            node: this.$.container,
+                            timing: {
+                                delay: 50
+                            }
+                        }],
+                        'exit': [{
+                            name: 'opaque-animation',
+                            node: this.$.placeholder
+                        }, {
+                            name: 'fade-out-animation',
+                            node: this.$.container,
+                            timing: {
+                                duration: 0
+                            }
+                        }, {
+                            name: 'reverse-ripple-animation',
+                            id: 'reverse-ripple',
+                            fromPage: this
+                        }]
+                    };
+                }
+            },
+            sharedElements: {
+                value: function() {
+                    return {
+                        'ripple': this.$.placeholder,
+                        'reverse-ripple': this.$.placeholder
+                    };
+                }
+            }
+        },
+        ready: function () {
+            this.version = window.version;
+        },
+        _switch: function() {
+            ga('send', {
+              hitType: 'pageview',
+              page: '/'
+            });
+            document.querySelector('#pages').select(0);
+        }
+    });
+})();
+</script>
