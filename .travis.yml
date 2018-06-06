@@ -1,0 +1,110 @@
+---
+dist: trusty
+language: node_js
+sudo: false
+git:
+  depth: 5
+
+node_js: lts/*
+before_cache:
+  - cd $TRAVIS_BUILD_DIR
+  - rm -rf $TRAVIS_BUILD_DIR/node_modules/.bin $TRAVIS_BUILD_DIR/node_modules/@onedoes
+
+cache:
+  yarn: true
+  directories:
+    - $TRAVIS_BUILD_DIR/node_modules
+    - $TRAVIS_BUILD_DIR/packages/pwa/app/bower_components
+
+before_install:
+  - curl -o- -L https://yarnpkg.com/install.sh | bash
+  - source ~/.bashrc
+
+before_script:
+  - '
+    if [ "$TRAVIS_BRANCH" != "master" ]; then
+      export SAUCE_ACCESS_KEY=$PR_SAUCE_ACCESS_KEY;
+      export SAUCE_USERNAME=$PR_SAUCE_USERNAME;
+    fi;
+    '
+stages:
+  - Local tests
+
+  - name: Remote tests
+    if:  type IN (cron, push, pull_request) AND (fork = false) AND (tag IS blank)
+
+  - name: Deploy Backend
+    if: tag = release-plz
+
+  - name: Deploy Front End
+    if: tag =~ ^v
+
+jobs:
+  include:
+    - stage: Local tests
+      addons:
+        firefox: latest
+      before_script:
+        - echo "--no-sandbox" > ~/.config/chrome-flags.conf
+      script: xvfb-run sh ./scripts/test-local.sh
+
+    - stage: Remote tests
+      env: BROWSER=iphone
+      script: sh ./scripts/test-remote.sh
+    -
+      env: BROWSER=android
+      script: sh ./scripts/test-remote.sh
+    -
+      env: BROWSER=chrome
+      script: sh ./scripts/test-remote.sh
+    -
+      env: BROWSER=firefox
+      script: sh ./scripts/test-remote.sh
+    -
+      env: BROWSER=edge
+      script: sh ./scripts/test-remote.sh
+
+    - stage: Deploy Backend
+      before_script:
+        - '
+          git remote rm origin &&
+          git remote add origin https://${GH_USER}:${GITHUB_TOKEN}@github.com/${TRAVIS_REPO_SLUG}.git &&
+          git fetch origin master &&
+          git checkout -qf master &&
+          git tag -d release-plz &&
+          git push origin :release-plz &&
+
+          git config user.name "Deployment Bot (from Travis CI)" &&
+          git config user.email "deploy@travis-ci.org"
+          '
+      script:
+        - '
+          if [ sh ./scripts/test-files-in-latest-commit-match.sh packages/server ]; then
+            sh ./scripts/deploy-server.sh &&
+            sh ./scripts/sync.sh;
+          fi
+          '
+        - '
+          sh ./scripts/release-bump.sh
+          '
+      after_success:
+        - '
+          git push origin --follow-tags
+          '
+
+    - stage: Deploy Front End
+      before_script:
+        - '
+          git config user.name "Deployment Bot (from Travis CI)" &&
+          git config user.email "deploy@travis-ci.org"
+          '
+      script:
+        - yarn run build
+      deploy:
+        provider: pages
+        skip_cleanup: true
+        local_dir: packages/pwa/dist
+        github-token: $GITHUB_TOKEN
+        on:
+          all_branches: true
+          tags: true
