@@ -5,7 +5,7 @@ RUN yum install -y git \
 && yum install -y nodejs
 
 RUN cd / \
-&& git clone https://github.com/person896/snapdrop.git
+&& git clone https://github.com/person896/oneDoesSnapdrop.git
 
 RUN cd /snapdrop && npm install -g yarn
 RUN cd /snapdrop && yarn start
