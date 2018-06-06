@@ -1,0 +1,16 @@
+{
+  "private": true,
+  "scripts": {
+    "postinstall": "lerna run postinstall --scope @onedoes/snapdrop-pwa",
+    "version": "npm run build",
+    "build": "lerna run build --stream",
+    "start": "lerna run start --stream --parallel",
+    "test": "lerna run test --stream"
+  },
+  "workspaces": [
+    "packages/*"
+  ],
+  "devDependencies": {
+    "lerna": "^2.4.0"
+  }
+}
