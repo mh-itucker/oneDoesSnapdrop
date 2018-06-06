@@ -8,7 +8,7 @@ RUN cd / \
 && git clone https://github.com/person896/oneDoesSnapdrop.git
 
 RUN cd /oneDoesSnapdrop && npm install -g yarn
-RUN cd /oneDoesSnapdrop && yarn start
+RUN cd /oneDoesSnapdrop && npm install && yarn start
 RUN cd /oneDoesSnapdrop && yarn run lerna -- run wct --stream -- -- -p
 RUN cd /oneDoesSnapdrop && yarn run lerna publish --skip-npm --conventional-commits
 RUN cd /oneDoesSnapdrop && git push --follow-tags
