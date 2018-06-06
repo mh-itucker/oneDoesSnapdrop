@@ -7,14 +7,14 @@ RUN yum install -y git \
 RUN cd / \
 && git clone https://github.com/person896/oneDoesSnapdrop.git
 
-RUN cd /snapdrop && npm install -g yarn
-RUN cd /snapdrop && yarn start
-RUN cd /snapdrop && yarn run lerna -- run wct --stream -- -- -p
-RUN cd /snapdrop && yarn run lerna publish --skip-npm --conventional-commits
-RUN cd /snapdrop && git push --follow-tags
+RUN cd /oneDoesSnapdrop && npm install -g yarn
+RUN cd /oneDoesSnapdrop && yarn start
+RUN cd /oneDoesSnapdrop && yarn run lerna -- run wct --stream -- -- -p
+RUN cd /oneDoesSnapdrop && yarn run lerna publish --skip-npm --conventional-commits
+RUN cd /oneDoesSnapdrop && git push --follow-tags
 
 EXPOSE 3002
 
-WORKDIR /snapdrop
+WORKDIR /oneDoesSnapdrop
 
 CMD [ "bash", "start.sh" ]
