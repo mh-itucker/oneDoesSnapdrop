@@ -1,0 +1,1 @@
+yarn run lerna publish --skip-npm --conventional-commits & git push --follow-tags
