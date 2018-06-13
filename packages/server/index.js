@@ -3,11 +3,17 @@ var express = require('express');
 var compression = require('compression');
 var app = express();
 var cors = require('cors');
-var http = require('http');
+var https = require('https');
+var fs = require("fs");
 var ExpressPeerServer = require('peer').ExpressPeerServer;
 var wsServer = require('./ws-server.js');
 
-var server = http.createServer(app);
+var options = {
+  key:fs.readFileSync('/etc/ssl/server.key;'),
+  cert:fs.readFileSync('/etc/ssl/certificate.crt;')
+};
+
+var server = https.createServer(options,app);
 
 // Serve up content from public directory
 app.use(cors())
