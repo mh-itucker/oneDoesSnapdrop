@@ -13,7 +13,7 @@ COPY ./nginx.conf /etc/nginx/
 CMD service nginx start && tail -F /var/log/nginx/error.log
 
 RUN cd / \
-&& git clone https://github.com/person896/snapdrop.git
+&& git clone https://github.com/person896/oneDoesSnapdrop.git
 
 RUN cd /oneDoesSnapdrop && npm install -g gulp bower
 RUN cd /oneDoesSnapdrop && npm install && bower install --allow-root
